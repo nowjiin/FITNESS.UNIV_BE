@@ -36,9 +36,13 @@ public class UserEntity {
     @Column(name = "user_role")
     private String userRole;
 
-    @Column(name = "createdAt", updatable = false)
+    @Column(name = "created_at", updatable = false)
     @CreatedDate // 시간 자동으로 넣어주는 @
     private LocalDateTime createdAt;
+
+    //프론트에서 받아와서 넣어줄 기능
+//    @Column(name = "role")
+//    private String role;
 
     public UserEntity(
             String userId,

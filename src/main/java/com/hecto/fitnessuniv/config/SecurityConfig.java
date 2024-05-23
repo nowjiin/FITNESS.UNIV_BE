@@ -55,7 +55,8 @@ public class SecurityConfig {
                                                 "/login/oauth2/**",
                                                 "/v3/api-docs/**",
                                                 "/swagger-ui.html",
-                                                "/swagger-ui/**")
+                                                "/swagger-ui/**",
+                                                "/api/role")
                                         .permitAll()
                                         .requestMatchers("/api/v1/user/*")
                                         .hasRole("USER")
