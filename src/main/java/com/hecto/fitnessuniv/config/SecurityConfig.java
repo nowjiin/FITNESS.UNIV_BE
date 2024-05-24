@@ -56,7 +56,9 @@ public class SecurityConfig {
                                                 "/v3/api-docs/**",
                                                 "/swagger-ui.html",
                                                 "/swagger-ui/**",
-                                                "/api/role")
+                                                "/api/role",
+                                                "/chat/roomNum/*",
+                                                "/chat")
                                         .permitAll()
                                         .requestMatchers("/api/v1/user/*")
                                         .hasRole("USER")
