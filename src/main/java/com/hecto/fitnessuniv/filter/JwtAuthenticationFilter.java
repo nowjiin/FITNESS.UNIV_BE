@@ -3,6 +3,7 @@ package com.hecto.fitnessuniv.filter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -41,20 +42,40 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             String token = parseBearerToken(request);
-            if (token != null) {
-                // 검증
-                String userId = jwtProvider.validate(token);
+            // 토근이 널이 아니고 jwtProvider 에서 jwt 검증이 유효할 경우 실행
+            if (token != null && jwtProvider.validate(token)) {
+                // 토큰에서 userID 추출
+                String userId = jwtProvider.getUserIdFromToken(token);
                 // 밑 validate 에서 값이 없으면 null 을 리턴하기 때문에
                 // 널이면 다음 필터 진행
-                if (userId == null) {
+                if (userId != null) {
+                    // 이 다음 userRepository 를 거쳐서 User 정보를 꺼내올거임
+                    // findById를 유저 레포에 만들고오기  findByUserId 로 User 의 Id 가져온 후 처리
+                    Optional<UserEntity> userEntityOptional = userRepository.findByUserId(userId);
+                    if (userEntityOptional.isPresent()) {
+                        UserEntity userEntity = userEntityOptional.get();
+                        String role = userEntity.getUserRole(); // 실제 UserEntity 객체에서 getUserRole 호출
+
+                        List<GrantedAuthority> authorities = new ArrayList<>();
+                        authorities.add(new SimpleGrantedAuthority(role));
+
+                        SecurityContext securityContext =
+                                SecurityContextHolder.createEmptyContext();
+                        AbstractAuthenticationToken authenticationToken =
+                                new UsernamePasswordAuthenticationToken(userId, null, authorities);
+                        authenticationToken.setDetails(
+                                new WebAuthenticationDetailsSource().buildDetails(request));
+                        securityContext.setAuthentication(authenticationToken);
+                        SecurityContextHolder.setContext(securityContext);
+                    } else {
+                        filterChain.doFilter(request, response);
+                        return;
+                    }
+                } else {
                     filterChain.doFilter(request, response);
                     return;
                 }
-                // 이 다음 userRepository 를 거쳐서 User 정보를 꺼내올거임
-                // findById를 유저 레포에 만들고오기
-                // findByUserId 로 User 의 Id 가져온 후
-                UserEntity userEntity = userRepository.findByUserId(userId);
-                // User 의 role 권한 가져옴
+                /*               // User 의 role 권한 가져옴
                 // userEntity 에 getUserRole()이 없는데?! 이거 spring 이 해주는거
                 String role = userEntity.getUserRole(); // role = "ROLE_USER" or "ROLE_ADMIN"
                 // 권한 설정 SimpleGrantedAuthority의 예시의 규칙이있음
@@ -75,6 +96,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 securityContext.setAuthentication(authenticationToken);
                 // 만든 컨텍스트를 등록
                 SecurityContextHolder.setContext(securityContext);
+                */
             } else { // authorization 이 없거나 아닐경우 다음 필터로 바로 넘어가라
                 filterChain.doFilter(request, response);
                 return;

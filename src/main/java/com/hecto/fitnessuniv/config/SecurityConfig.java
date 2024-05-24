@@ -1,6 +1,5 @@
 package com.hecto.fitnessuniv.config;
 
-import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -22,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 
 // 스프링 시큐리티를 사용하면 default 로 로그인 안된 사용자의
 // 모든 접근을 팅겨냄 로그인을 들어가져야지 홈이랑 스웨거는 들어가져야지 열어주자
-@Configurable
+// @Configurable
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -51,7 +50,7 @@ public class SecurityConfig {
                         request ->
                                 request.requestMatchers(
                                                 "/",
-                                                "/api/v1/oauth2/*",
+                                                "/api/v1/oauth2/**",
                                                 "/login/oauth2/**",
                                                 "/v3/api-docs/**",
                                                 "/swagger-ui.html",
@@ -102,9 +101,10 @@ public class SecurityConfig {
     @Bean
     protected CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.addAllowedOrigin("*");
-        corsConfiguration.addAllowedMethod("*");
-        corsConfiguration.addAllowedHeader("*");
+        corsConfiguration.addAllowedOrigin("http://localhost:3000"); // 도메인 허용
+        corsConfiguration.addAllowedMethod("*"); // 모든 HTTP 메서드 허용
+        corsConfiguration.addAllowedHeader("*"); // 모든 헤더 허용
+        corsConfiguration.setAllowCredentials(true); // 자격 증명 허용
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfiguration);

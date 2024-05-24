@@ -56,8 +56,11 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             System.out.println("Google - ID: " + id);
             System.out.println("Google - Token: " + token);
 
+            // 응답 헤더에 JWT 토큰 추가
+            response.addHeader("Authorization", "Bearer " + token);
             // 로그인 성공 후 처리할 로직 작성
-            response.sendRedirect("http://localhost:3000/" + token);
+            response.sendRedirect("http://localhost:3000/role?token=" + token);
+            System.out.println("발행한 구글 token : " + token);
         } else {
             System.out.println("Google Login - FAIL");
             response.sendRedirect("/error");
@@ -69,7 +72,6 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             throws IOException {
         Object responseObject = attributes.get("response");
         if (responseObject instanceof Map<?, ?> responseMap) {
-            // Map<String, Object> responseMap = (Map<String, Object>) responseObject;
             if (responseMap.containsKey("email")) {
                 String email = (String) responseMap.get("email");
                 String id = (String) responseMap.get("id");
@@ -80,8 +82,12 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 System.out.println("Naver - ID: " + id);
                 System.out.println("Naver - Token: " + token);
 
+                // 응답 헤더에 JWT 토큰 추가
+                response.addHeader("Authorization", "Bearer " + token);
+
                 // 로그인 성공 후 처리할 로직 작성
-                response.sendRedirect("http://localhost:3000/" + token);
+                response.sendRedirect("http://localhost:3000/role?token=" + token);
+                System.out.println("발행한 네이버 token : " + token);
             } else {
                 System.out.println("Naver Login - FAIL");
                 response.sendRedirect("/error");

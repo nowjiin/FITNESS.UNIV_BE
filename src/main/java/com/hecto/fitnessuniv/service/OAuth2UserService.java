@@ -48,16 +48,14 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
 
             if (response instanceof Map<?, ?> responseMap) {
                 userId =
-                        "naver_"
-                                + ((String) responseMap.get("id"))
-                                        .substring(
-                                                0, ((String) responseMap.get("id")).length() - 1);
+                        ((String) responseMap.get("id"))
+                                .substring(0, ((String) responseMap.get("id")).length() - 1);
                 userEmail = (String) responseMap.get("email");
                 userName = (String) responseMap.get("name");
                 userEntity = new UserEntity(userId, userName, userEmail, "naver", "ROLE_USER");
             }
         } else if (oauthClientName.equals("google")) {
-            userId = "google_" + oAuth2User.getAttribute("sub");
+            userId = oAuth2User.getAttribute("sub");
             userEmail = oAuth2User.getAttribute("email");
             userName = oAuth2User.getAttribute("name");
             userEntity = new UserEntity(userId, userName, userEmail, "google", "ROLE_USER");

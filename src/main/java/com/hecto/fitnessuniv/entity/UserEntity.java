@@ -2,7 +2,11 @@ package com.hecto.fitnessuniv.entity;
 
 import java.time.LocalDateTime;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -10,6 +14,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @NoArgsConstructor
@@ -18,6 +23,7 @@ import lombok.NoArgsConstructor;
 // DB의 어떤 테이블과 매핑 시킬건지
 // 만약 클래스 이름이 UserEntity가 아니고 User면 Table 어노테이션 필요 없음
 @Table(name = "user")
+// 날짜 자동 삽입 어노테이션
 @EntityListeners(AuditingEntityListener.class)
 public class UserEntity {
     @Id
@@ -40,9 +46,10 @@ public class UserEntity {
     @CreatedDate // 시간 자동으로 넣어주는 @
     private LocalDateTime createdAt;
 
-    // 프론트에서 받아와서 넣어줄 기능
-    //    @Column(name = "role")
-    //    private String role;
+    // 프론트에서 유저가 멘토인지 멘티인지 구분
+    @Setter
+    @Column(name = "role")
+    private String role;
 
     public UserEntity(
             String userId,

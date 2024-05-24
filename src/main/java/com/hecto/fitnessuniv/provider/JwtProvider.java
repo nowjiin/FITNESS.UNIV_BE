@@ -9,6 +9,7 @@ import java.util.Date;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -18,38 +19,48 @@ public class JwtProvider {
     @Value("${secret-key}")
     private String secretKey;
 
+    private Key getSigningKey() {
+        return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+    }
+
     public String createToken(String userId) {
         Date expiredDate = Date.from(Instant.now().plus(1, ChronoUnit.HOURS));
         // Key 설정
         // Key 는 java 의 key Keys 는 jjwt 의 Keys 임호화해서 Java key 에 저장
-        Key key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+        Key key = getSigningKey();
         // jwt 만들고 반환.
         return Jwts.builder()
                 // JWT 생성
-                .signWith(key, SignatureAlgorithm.HS256)
                 .setSubject(userId)
                 .setIssuedAt(new Date())
                 .setExpiration(expiredDate)
+                .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
     // jwt 검증 메서드
-    public String validate(String jwt) {
-        String subject;
+    public boolean validate(String jwt) {
         // Signature 생성
         Key key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
         try {
-            subject =
-                    Jwts.parserBuilder()
-                            .setSigningKey(key)
-                            .build()
-                            .parseClaimsJws(jwt)
-                            .getBody()
-                            .getSubject();
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(jwt);
+            System.out.println("JWT validation 성공 TRUE");
+            return true;
         } catch (Exception e) {
+            System.out.println("JWT validation 실패 Provider:50번째줄");
             e.printStackTrace();
-            return null;
+            return false;
         }
-        return subject;
+    }
+
+    // Token 에서 id 추출
+    public String getUserIdFromToken(String jwt) {
+        Claims claims =
+                Jwts.parserBuilder()
+                        .setSigningKey(getSigningKey())
+                        .build()
+                        .parseClaimsJws(jwt)
+                        .getBody();
+        return claims.getSubject();
     }
 }
