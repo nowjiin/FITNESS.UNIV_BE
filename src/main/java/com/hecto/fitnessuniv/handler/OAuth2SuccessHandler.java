@@ -30,7 +30,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         Map<String, Object> attributes = oAuth2User.getAttributes();
 
         // jwt token 생성
-        String token = jwtProvider.createToken(oAuth2User.getId());
+        String token = jwtProvider.createToken(oAuth2User.getId(), oAuth2User.getName());
 
         // 네이버 구글 로직 따로 처리하기 위해 클라이언트 이름 추출
         String oauthClientName = request.getRequestURI().contains("naver") ? "naver" : "google";

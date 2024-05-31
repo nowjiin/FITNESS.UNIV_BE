@@ -1,9 +1,15 @@
 package com.hecto.fitnessuniv.chat;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+
+import com.hecto.fitnessuniv.provider.JwtProvider;
+import com.hecto.fitnessuniv.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
@@ -15,23 +21,22 @@ import reactor.core.scheduler.Schedulers;
 public class ChatController {
 
     private final ChatRepository chatRepository;
+    private final UserRepository userRepository;
+    private final JwtProvider jwtProvider;
 
     @CrossOrigin
     @GetMapping(
             value = "/sender/{sender}/receiver/{receiver}",
-            produces = MediaType.TEXT_EVENT_STREAM_VALUE) // sse타입 데이터가 안끊기고 송신됨
-    public Flux<Chat> getMsg(
-            @PathVariable String sender, @PathVariable String receiver) { // Flux타입으로 주입유
+            produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<Chat> getMsg(@PathVariable String sender, @PathVariable String receiver) {
         return chatRepository
                 .mFindBySender(sender, receiver)
                 .subscribeOn(Schedulers.boundedElastic());
     }
 
     @CrossOrigin
-    @GetMapping(
-            value = "/chat/roomNum/{roomNum}",
-            produces = MediaType.TEXT_EVENT_STREAM_VALUE) // sse타입 데이터가 안끊기고 송신됨
-    public Flux<Chat> findByRoomNum(@PathVariable Integer roomNum) { // Flux타입으로 주입유
+    @GetMapping(value = "/chat/roomNum/{roomNum}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<Chat> findByRoomNum(@PathVariable String roomNum) {
         return chatRepository.mFindByRoomNum(roomNum).subscribeOn(Schedulers.boundedElastic());
     }
 
@@ -39,6 +44,33 @@ public class ChatController {
     @PostMapping("/chat")
     public Mono<Chat> setMsg(@RequestBody Chat chat) {
         chat.setCreatedAt(LocalDateTime.now());
+        System.out.println("Received message: " + chat); // 로그 추가
         return chatRepository.save(chat);
+    }
+
+    @CrossOrigin
+    @GetMapping("/auth/user")
+    public Mono<Map<String, String>> getUserInfo(@RequestHeader("Authorization") String token) {
+        String jwt = token.substring(7); // "Bearer " 부분 제거
+        String userId = jwtProvider.getUserIdFromToken(jwt);
+        String username = jwtProvider.getUsernameFromToken(jwt);
+
+        System.out.println("User ID입니다: " + userId);
+        System.out.println("Username입니다: " + username);
+
+        Map<String, String> userInfo = new HashMap<>();
+        userInfo.put("userId", userId);
+        userInfo.put("username", username);
+
+        return Mono.just(userInfo);
+    }
+
+    @CrossOrigin
+    @PostMapping("/chat/createRoom")
+    public Mono<Map<String, String>> createRoom() {
+        String roomNum = UUID.randomUUID().toString();
+        Map<String, String> response = new HashMap<>();
+        response.put("roomNum", roomNum);
+        return Mono.just(response);
     }
 }

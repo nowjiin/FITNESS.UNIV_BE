@@ -23,7 +23,7 @@ public class JwtProvider {
         return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String createToken(String userId) {
+    public String createToken(String userId, String userName) {
         Date expiredDate = Date.from(Instant.now().plus(1, ChronoUnit.HOURS));
         // Key 설정
         // Key 는 java 의 key Keys 는 jjwt 의 Keys 임호화해서 Java key 에 저장
@@ -31,7 +31,10 @@ public class JwtProvider {
         // jwt 만들고 반환.
         return Jwts.builder()
                 // JWT 생성
-                .setSubject(userId)
+                .setId(userId)
+                .setSubject(userName)
+                .claim("userId", userId) // userId를 토큰에 포함
+                .claim("username", userName) // username을 토큰에 포함
                 .setIssuedAt(new Date())
                 .setExpiration(expiredDate)
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -53,14 +56,21 @@ public class JwtProvider {
         }
     }
 
-    // Token 에서 id 추출
+    private Claims getAllClaimsFromToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
+    // 토큰에서 id추출
     public String getUserIdFromToken(String jwt) {
-        Claims claims =
-                Jwts.parserBuilder()
-                        .setSigningKey(getSigningKey())
-                        .build()
-                        .parseClaimsJws(jwt)
-                        .getBody();
-        return claims.getSubject();
+        return getAllClaimsFromToken(jwt).get("userId", String.class);
+    }
+
+    // 토큰에서 username추출
+    public String getUsernameFromToken(String jwt) {
+        return getAllClaimsFromToken(jwt).get("username", String.class);
     }
 }

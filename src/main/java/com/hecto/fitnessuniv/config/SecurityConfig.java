@@ -57,6 +57,9 @@ public class SecurityConfig {
                                                 "/swagger-ui/**",
                                                 "/api/role",
                                                 "/chat/roomNum/*",
+                                                "/api/v1/user/*",
+                                                "/auth/user",
+                                                "/chat/createRoom",
                                                 "/chat")
                                         .permitAll()
                                         .requestMatchers("/api/v1/user/*")

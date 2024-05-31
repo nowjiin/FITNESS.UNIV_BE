@@ -13,8 +13,9 @@ public class Chat {
     @Id private String id;
     private String msg;
     private String sender;
+    private String userId;
     private String receiver;
-    private Integer roomNum;
+    private String roomNum;
 
     private LocalDateTime createdAt;
 }
