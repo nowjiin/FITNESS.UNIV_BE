@@ -31,10 +31,8 @@ public class JwtProvider {
         // jwt 만들고 반환.
         return Jwts.builder()
                 // JWT 생성
-                .setId(userId)
-                .setSubject(userName)
-                .claim("userId", userId) // userId를 토큰에 포함
-                .claim("username", userName) // username을 토큰에 포함
+                .claim("userId", userId)
+                .claim("username", userName)
                 .setIssuedAt(new Date())
                 .setExpiration(expiredDate)
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -43,10 +41,8 @@ public class JwtProvider {
 
     // jwt 검증 메서드
     public boolean validate(String jwt) {
-        // Signature 생성
-        Key key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
         try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(jwt);
+            Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(jwt);
             System.out.println("JWT validation 성공 TRUE");
             return true;
         } catch (Exception e) {
