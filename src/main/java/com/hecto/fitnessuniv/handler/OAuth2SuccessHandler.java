@@ -47,20 +47,10 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             HttpServletResponse response, Map<String, Object> attributes, String token)
             throws IOException {
         if (attributes != null && attributes.containsKey("email")) {
-            String email = (String) attributes.get("email");
-            String id = (String) attributes.get("sub");
-
-            // 디버깅을 위한 로그 추가
-            System.out.println("Google Login - SUCCESS");
-            System.out.println("Google - Email: " + email);
-            System.out.println("Google - ID: " + id);
-            System.out.println("Google - Token: " + token);
-
             // 응답 헤더에 JWT 토큰 추가
             response.addHeader("Authorization", "Bearer " + token);
             // 로그인 성공 후 처리할 로직 작성
             response.sendRedirect("http://localhost:3000/role?token=" + token);
-            System.out.println("발행한 구글 token : " + token);
         } else {
             System.out.println("Google Login - FAIL");
             response.sendRedirect("/error");
@@ -73,14 +63,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         Object responseObject = attributes.get("response");
         if (responseObject instanceof Map<?, ?> responseMap) {
             if (responseMap.containsKey("email")) {
-                String email = (String) responseMap.get("email");
-                String id = (String) responseMap.get("id");
-
                 // 디버깅을 위한 로그 추가
                 System.out.println("Naver Login - SUCCESS");
-                System.out.println("Naver - Email: " + email);
-                System.out.println("Naver - ID: " + id);
-                System.out.println("Naver - Token: " + token);
 
                 // 응답 헤더에 JWT 토큰 추가
                 response.addHeader("Authorization", "Bearer " + token);

@@ -54,10 +54,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     Optional<UserEntity> userEntityOptional = userRepository.findByUserId(userId);
                     if (userEntityOptional.isPresent()) {
                         UserEntity userEntity = userEntityOptional.get();
-                        String role = userEntity.getUserRole(); // 실제 UserEntity 객체에서 getUserRole 호출
+                        //                        String role = userEntity.getUserRole(); // 실제
+                        // UserEntity 객체에서 getUserRole 호출
 
                         List<GrantedAuthority> authorities = new ArrayList<>();
-                        authorities.add(new SimpleGrantedAuthority(role));
+                        authorities.add(new SimpleGrantedAuthority(userEntity.getUserRole()));
 
                         SecurityContext securityContext =
                                 SecurityContextHolder.createEmptyContext();
@@ -75,34 +76,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     filterChain.doFilter(request, response);
                     return;
                 }
-                /*               // User 의 role 권한 가져옴
-                // userEntity 에 getUserRole()이 없는데?! 이거 spring 이 해주는거
-                String role = userEntity.getUserRole(); // role = "ROLE_USER" or "ROLE_ADMIN"
-                // 권한 설정 SimpleGrantedAuthority의 예시의 규칙이있음
-                // ROLE_DEVELOPER 등등 ..
-                List<GrantedAuthority> authorities = new ArrayList<>();
-                authorities.add(new SimpleGrantedAuthority(role));
-
-                // context bean 으로 등록할 컨텍스트
-                SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-                // 컨텍스트 안에 담을 토큰을 만들어줘야함
-                AbstractAuthenticationToken authenticationToken =
-                        // userId와 비밀번호(여기서는 없게 해놔서 널), 인증정보
-                        new UsernamePasswordAuthenticationToken(userId, null, authorities);
-                // request details 에 추가를 해줘야함
-                authenticationToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request));
-                // 이제 context 에 토큰 값을 담아줌
-                securityContext.setAuthentication(authenticationToken);
-                // 만든 컨텍스트를 등록
-                SecurityContextHolder.setContext(securityContext);
-                */
-            } else { // authorization 이 없거나 아닐경우 다음 필터로 바로 넘어가라
                 filterChain.doFilter(request, response);
                 return;
             }
         } catch (Exception e) {
             e.printStackTrace();
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+            return;
         }
         filterChain.doFilter(request, response);
     }
