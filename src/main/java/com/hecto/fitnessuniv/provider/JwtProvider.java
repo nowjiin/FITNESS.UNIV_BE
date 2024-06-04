@@ -33,8 +33,6 @@ public class JwtProvider {
                 // JWT 생성
                 .setId(userId)
                 .setSubject(userName)
-                .claim("userId", userId) // userId를 토큰에 포함
-                .claim("username", userName) // username을 토큰에 포함
                 .setIssuedAt(new Date())
                 .setExpiration(expiredDate)
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -56,21 +54,14 @@ public class JwtProvider {
         }
     }
 
-    private Claims getAllClaimsFromToken(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-    }
-
-    // 토큰에서 id추출
-    public String getUserIdFromToken(String jwt) {
-        return getAllClaimsFromToken(jwt).get("userId", String.class);
-    }
-
-    // 토큰에서 username추출
-    public String getUsernameFromToken(String jwt) {
-        return getAllClaimsFromToken(jwt).get("username", String.class);
+    // userid받아오기
+    public String getUserIdFromToken(String token) {
+        Claims claims =
+                Jwts.parserBuilder()
+                        .setSigningKey(getSigningKey())
+                        .build()
+                        .parseClaimsJws(token)
+                        .getBody();
+        return claims.getId();
     }
 }

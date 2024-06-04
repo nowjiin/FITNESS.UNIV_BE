@@ -53,16 +53,18 @@ public class ChatController {
     public Mono<Map<String, String>> getUserInfo(@RequestHeader("Authorization") String token) {
         String jwt = token.substring(7); // "Bearer " 부분 제거
         String userId = jwtProvider.getUserIdFromToken(jwt);
-        String username = jwtProvider.getUsernameFromToken(jwt);
 
-        System.out.println("User ID입니다: " + userId);
-        System.out.println("Username입니다: " + username);
-
-        Map<String, String> userInfo = new HashMap<>();
-        userInfo.put("userId", userId);
-        userInfo.put("username", username);
-
-        return Mono.just(userInfo);
+        return userRepository
+                .findByUserId(userId)
+                .map(
+                        userEntity -> {
+                            Map<String, String> userInfo = new HashMap<>();
+                            userInfo.put("userId", userEntity.getUserId());
+                            userInfo.put("username", userEntity.getUserName());
+                            return userInfo;
+                        })
+                .map(Mono::just)
+                .orElseGet(() -> Mono.error(new IllegalArgumentException("Invalid token")));
     }
 
     @CrossOrigin
