@@ -46,6 +46,9 @@ public class UserEntity {
     @CreatedDate // 시간 자동으로 넣어주는 @
     private LocalDateTime createdAt;
 
+    @Column(name = "refresh_token", nullable = true)
+    private String refreshToken;
+
     // 프론트에서 유저가 멘토인지 멘티인지 구분
     @Setter
     @Column(name = "role")
