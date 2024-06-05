@@ -13,9 +13,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class MentorProfile {
-
+public class MentorProfileEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -50,6 +48,9 @@ public class MentorProfile {
 
     // Getters that convert comma-separated String to List<String>
     public List<String> getExercises() {
+        if (this.exercises == null || this.exercises.isEmpty()) {
+            return List.of();
+        }
         return Arrays.asList(exercises.split(","));
     }
 

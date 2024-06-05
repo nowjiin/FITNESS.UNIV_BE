@@ -25,9 +25,11 @@ import com.hecto.fitnessuniv.provider.JwtProvider;
 import com.hecto.fitnessuniv.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 // 필터로 등록하기 위해서 OncePerRequestFilter 를 받아와야함.
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -41,46 +43,63 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         try {
-            String token = parseBearerToken(request);
+            String accessToken = parseBearerToken(request);
             // 토근이 널이 아니고 jwtProvider 에서 jwt 검증이 유효할 경우 실행
-            if (token != null && jwtProvider.validate(token)) {
-                // 토큰에서 userID 추출
-                String userId = jwtProvider.getUserIdFromToken(token);
-                // 밑 validate 에서 값이 없으면 null 을 리턴하기 때문에
-                // 널이면 다음 필터 진행
-                if (userId != null) {
-                    // 이 다음 userRepository 를 거쳐서 User 정보를 꺼내올거임
-                    // findById를 유저 레포에 만들고오기  findByUserId 로 User 의 Id 가져온 후 처리
-                    Optional<UserEntity> userEntityOptional = userRepository.findByUserId(userId);
-                    if (userEntityOptional.isPresent()) {
-                        UserEntity userEntity = userEntityOptional.get();
-                        //                        String role = userEntity.getUserRole(); // 실제
-                        // UserEntity 객체에서 getUserRole 호출
+            if (accessToken != null) {
+                // 토큰 검증
+                boolean isAccessTokenValid = jwtProvider.validate(accessToken);
 
-                        List<GrantedAuthority> authorities = new ArrayList<>();
-                        authorities.add(new SimpleGrantedAuthority(userEntity.getUserRole()));
+                if (!isAccessTokenValid) {
+                    String refreshToken = request.getHeader("Refresh-Token");
+                    if (refreshToken != null && jwtProvider.validate(refreshToken)) {
+                        String newAccessToken = jwtProvider.refreshAccessToken(refreshToken);
+                        response.setHeader("Authorization", "Bearer " + newAccessToken);
+                        accessToken = newAccessToken;
+                        log.info("Refresh access token");
+                    } else {
+                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+                        return;
+                    }
+                }
+                if (accessToken != null && jwtProvider.validate(accessToken)) {
+                    String userId = jwtProvider.getUserIdFromToken(accessToken);
+                    // 토큰 검증까지 다했는데 토큰에 유져 ID가 없을경우
+                    if (userId != null) {
+                        // 이 다음 userRepository 를 거쳐서 User 정보를 꺼내올거임
+                        // findById를 유저 레포에 만들고오기  findByUserId 로 User 의 Id 가져온 후 처리
+                        Optional<UserEntity> userEntityOptional =
+                                userRepository.findByUserId(userId);
+                        if (userEntityOptional.isPresent()) {
+                            UserEntity userEntity = userEntityOptional.get();
+                            // String role = userEntity.getUserRole(); // 실제
+                            // UserEntity 객체에서 getUserRole 호출
 
-                        SecurityContext securityContext =
-                                SecurityContextHolder.createEmptyContext();
-                        AbstractAuthenticationToken authenticationToken =
-                                new UsernamePasswordAuthenticationToken(userId, null, authorities);
-                        authenticationToken.setDetails(
-                                new WebAuthenticationDetailsSource().buildDetails(request));
-                        securityContext.setAuthentication(authenticationToken);
-                        SecurityContextHolder.setContext(securityContext);
+                            List<GrantedAuthority> authorities = new ArrayList<>();
+                            authorities.add(new SimpleGrantedAuthority(userEntity.getUserRole()));
+
+                            SecurityContext securityContext =
+                                    SecurityContextHolder.createEmptyContext();
+                            AbstractAuthenticationToken authenticationToken =
+                                    new UsernamePasswordAuthenticationToken(
+                                            userId, null, authorities);
+                            authenticationToken.setDetails(
+                                    new WebAuthenticationDetailsSource().buildDetails(request));
+                            securityContext.setAuthentication(authenticationToken);
+                            SecurityContextHolder.setContext(securityContext);
+                        } else {
+                            filterChain.doFilter(request, response);
+                            return;
+                        }
                     } else {
                         filterChain.doFilter(request, response);
                         return;
                     }
-                } else {
                     filterChain.doFilter(request, response);
                     return;
                 }
-                filterChain.doFilter(request, response);
-                return;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.info("JWT Authentication Filter Failed");
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
             return;
         }

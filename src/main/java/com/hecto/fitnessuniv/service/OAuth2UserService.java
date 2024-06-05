@@ -30,6 +30,7 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         OAuth2User oAuth2User = super.loadUser(userRequest);
 
         String oauthClientName = userRequest.getClientRegistration().getClientName();
+        UserEntity userEntity = null;
         String userId = null;
         String userEmail = "";
         String userName = "";
@@ -49,20 +50,21 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
                                 .substring(0, ((String) responseMap.get("id")).length() - 1);
                 userEmail = (String) responseMap.get("email");
                 userName = (String) responseMap.get("name");
-                //                userEntity = new UserEntity(userId, userName, userEmail, "naver",
-                // "ROLE_USER");
+                userEntity = new UserEntity(userId, userName, userEmail, "naver", "ROLE_USER");
             }
         } else if (oauthClientName.equals("google")) {
             userId = oAuth2User.getAttribute("sub");
             userEmail = oAuth2User.getAttribute("email");
             userName = oAuth2User.getAttribute("name");
-            //            userEntity = new UserEntity(userId, userName, userEmail, "google",
-            // "ROLE_USER");
+            userEntity = new UserEntity(userId, userName, userEmail, "google", "ROLE_USER");
         }
-        String refreshToken = jwtProvider.createRefreshToken(userId);
 
-        UserEntity userEntity =
-                new UserEntity(userId, userName, userEmail, oauthClientName, "ROLE_USER");
+        if (userEntity != null) {
+            // 리프레시 토큰 생성 및 저장
+            String refreshToken = jwtProvider.createRefreshToken(userId);
+            userEntity.setRefreshToken(refreshToken);
+            userRepository.save(userEntity);
+        }
         userRepository.save(userEntity);
 
         Map<String, String> stringAttributes = new HashMap<>();

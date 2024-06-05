@@ -10,11 +10,13 @@ import com.hecto.fitnessuniv.provider.JwtProvider;
 import com.hecto.fitnessuniv.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:3000") // CORS 설정 추가
+@Slf4j
 public class RoleController {
     private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
@@ -30,7 +32,7 @@ public class RoleController {
                         .findByUserId(userId)
                         .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
         // 역할 업데이트
-        System.out.println("역할 업데이트됨 !");
+        log.info("역할 업데이트 됨!");
         userEntity.setRole(roleRequest.getRole());
         userRepository.save(userEntity);
 
