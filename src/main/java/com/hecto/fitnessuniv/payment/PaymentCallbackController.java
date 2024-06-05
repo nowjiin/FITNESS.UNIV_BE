@@ -1,6 +1,7 @@
 package com.hecto.fitnessuniv.payment;
 
 import java.util.Map;
+import java.util.Optional;
 
 import jakarta.transaction.Transactional;
 
@@ -8,10 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin(origins = "*") // 모든 도메인 허용
@@ -53,6 +51,12 @@ public class PaymentCallbackController {
 
         paymentRepository.save(payment);
 
-        return ResponseEntity.ok("OK");
+        return ResponseEntity.ok("");
+    }
+
+    @GetMapping("/payment/data")
+    public Payment getPaymentData(@RequestParam Long id) {
+        Optional<Payment> payment = paymentRepository.findById(id);
+        return payment.orElse(null);
     }
 }
