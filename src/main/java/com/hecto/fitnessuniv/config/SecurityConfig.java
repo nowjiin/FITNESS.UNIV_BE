@@ -60,6 +60,7 @@ public class SecurityConfig {
                                                 "/api/refresh-token",
                                                 "/chat/createRoom",
                                                 "/chat/roomNum/*",
+                                                "/paybutton**",
                                                 "/chat")
                                         .permitAll()
                                         .requestMatchers("/api/v1/user/*")
