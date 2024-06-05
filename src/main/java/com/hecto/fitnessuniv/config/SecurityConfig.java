@@ -61,6 +61,7 @@ public class SecurityConfig {
                                                 "/chat/createRoom",
                                                 "/chat/roomNum/*",
                                                 "/paybutton**",
+                                                "/payment/data",
                                                 "/chat")
                                         .permitAll()
                                         .requestMatchers("/api/v1/user/*")
