@@ -50,16 +50,16 @@ public class SecurityConfig {
                         request ->
                                 request.requestMatchers(
                                                 "/",
-                                                "/api/v1/oauth2/**",
-                                                "/login/oauth2/**",
+                                                // "/login/oauth2/**",
                                                 "/v3/api-docs/**",
                                                 "/swagger-ui.html",
                                                 "/swagger-ui/**",
+                                                "/api/v1/oauth2/**",
                                                 "/api/role",
-                                                "/chat/roomNum/*",
-                                                "/api/v1/user/*",
-                                                "/auth/user",
+                                                "/api/mentor",
+                                                "/api/refresh-token",
                                                 "/chat/createRoom",
+                                                "/chat/roomNum/*",
                                                 "/chat")
                                         .permitAll()
                                         .requestMatchers("/api/v1/user/*")

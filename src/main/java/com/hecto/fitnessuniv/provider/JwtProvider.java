@@ -39,6 +39,12 @@ public class JwtProvider {
                 .compact();
     }
 
+    public String refreshToken(String token) {
+        Date expiredDate = Date.from(Instant.now().plus(1, ChronoUnit.HOURS));
+        Key key = getSigningKey();
+        return Jwts.builder().signWith(key, SignatureAlgorithm.HS256).compact();
+    }
+
     // jwt 검증 메서드
     public boolean validate(String jwt) {
         // Signature 생성
