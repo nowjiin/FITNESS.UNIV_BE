@@ -1,12 +1,11 @@
 package com.hecto.fitnessuniv.controller;
 
-import java.util.Map;
-
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.hecto.fitnessuniv.provider.JwtProvider;
+
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api")
@@ -20,8 +19,8 @@ public class AuthController {
             try {
                 String token = bearerToken.substring(7);
                 if (jwtProvider.validate(token)) {
-                    String newToken = jwtProvider.refreshToken(token);
-                    return ResponseEntity.ok(Map.of("token", newToken));
+                    //                    String newToken = jwtProvider.refreshToken(token);
+                    //                    return ResponseEntity.ok(Map.of("token", newToken));
                 } else {
                     return ResponseEntity.status(401).body("Invalid token");
                 }
@@ -31,5 +30,6 @@ public class AuthController {
         } else {
             return ResponseEntity.status(400).body("Bearer token is missing or invalid");
         }
+        return null;
     }
 }

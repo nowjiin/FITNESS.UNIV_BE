@@ -1,7 +1,6 @@
 package com.hecto.fitnessuniv.handler;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.Map;
 
 import jakarta.servlet.ServletException;
@@ -31,7 +30,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         Map<String, Object> attributes = oAuth2User.getAttributes();
 
         // 액세스 토큰 및 리프레시 토큰 생성
-        String accessToken = jwtProvider.createAccessToken(oAuth2User.getId(), oAuth2User.getName());
+        String accessToken =
+                jwtProvider.createAccessToken(oAuth2User.getId(), oAuth2User.getName());
         String refreshToken = jwtProvider.createRefreshToken(oAuth2User.getId());
 
         // 네이버 구글 로직 따로 처리하기 위해 클라이언트 이름 추출
@@ -46,14 +46,21 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     }
 
     private void handleGoogleLogin(
-            HttpServletResponse response, Map<String, Object> attributes, String accessToken, String refreshToken)
+            HttpServletResponse response,
+            Map<String, Object> attributes,
+            String accessToken,
+            String refreshToken)
             throws IOException {
         if (attributes != null && attributes.containsKey("email")) {
             // 응답 헤더에 JWT 토큰 추가
             response.addHeader("Authorization", "Bearer " + accessToken);
             response.addHeader("Refresh-Token", refreshToken);
             // 로그인 성공 후 처리할 로직 작성
-            response.sendRedirect("http://localhost:3000/role?accessToken=" + accessToken + "&refreshToken=" + refreshToken);
+            response.sendRedirect(
+                    "http://localhost:3000/role?accessToken="
+                            + accessToken
+                            + "&refreshToken="
+                            + refreshToken);
         } else {
             System.out.println("Google Login - FAIL");
             response.sendRedirect("/error");
@@ -61,7 +68,10 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     }
 
     private void handleNaverLogin(
-            HttpServletResponse response, Map<String, Object> attributes, String accessToken, String refreshToken)
+            HttpServletResponse response,
+            Map<String, Object> attributes,
+            String accessToken,
+            String refreshToken)
             throws IOException {
         Object responseObject = attributes.get("response");
         if (responseObject instanceof Map<?, ?> responseMap) {
@@ -74,7 +84,11 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 response.addHeader("Refresh-Token", refreshToken);
 
                 // 로그인 성공 후 처리할 로직 작성
-                response.sendRedirect("http://localhost:3000/role?accessToken=" + accessToken + "&refreshToken=" + refreshToken);
+                response.sendRedirect(
+                        "http://localhost:3000/role?accessToken="
+                                + accessToken
+                                + "&refreshToken="
+                                + refreshToken);
                 System.out.println("발행한 네이버 accessToken : " + accessToken);
                 System.out.println("발행한 네이버 refreshToken : " + refreshToken);
             } else {

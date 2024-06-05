@@ -3,8 +3,6 @@ package com.hecto.fitnessuniv.service;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.hecto.fitnessuniv.provider.JwtProvider;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -13,9 +11,11 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hecto.fitnessuniv.entity.UserEntity;
+import com.hecto.fitnessuniv.provider.JwtProvider;
 import com.hecto.fitnessuniv.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
@@ -49,18 +49,20 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
                                 .substring(0, ((String) responseMap.get("id")).length() - 1);
                 userEmail = (String) responseMap.get("email");
                 userName = (String) responseMap.get("name");
-//                userEntity = new UserEntity(userId, userName, userEmail, "naver", "ROLE_USER");
+                //                userEntity = new UserEntity(userId, userName, userEmail, "naver",
+                // "ROLE_USER");
             }
         } else if (oauthClientName.equals("google")) {
             userId = oAuth2User.getAttribute("sub");
             userEmail = oAuth2User.getAttribute("email");
             userName = oAuth2User.getAttribute("name");
-//            userEntity = new UserEntity(userId, userName, userEmail, "google", "ROLE_USER");
+            //            userEntity = new UserEntity(userId, userName, userEmail, "google",
+            // "ROLE_USER");
         }
         String refreshToken = jwtProvider.createRefreshToken(userId);
 
-        UserEntity userEntity = new UserEntity(userId, userName, userEmail, oauthClientName, "ROLE_USER");
-        userEntity.setRefreshToken(refreshToken);
+        UserEntity userEntity =
+                new UserEntity(userId, userName, userEmail, oauthClientName, "ROLE_USER");
         userRepository.save(userEntity);
 
         Map<String, String> stringAttributes = new HashMap<>();
