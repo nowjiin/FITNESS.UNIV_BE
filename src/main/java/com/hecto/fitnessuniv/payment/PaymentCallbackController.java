@@ -51,7 +51,9 @@ public class PaymentCallbackController {
 
         paymentRepository.save(payment);
 
-        return ResponseEntity.ok("");
+        return ResponseEntity.status(302)
+                .header("Location", "http://localhost:3000/payment/success")
+                .build();
     }
 
     @GetMapping("/payment/data")
