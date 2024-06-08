@@ -2,7 +2,7 @@
 FROM openjdk:17
 
 # 애플리케이션 JAR 파일 위치 설정
-ARG JAR_FILE=target/*.jar
+ARG JAR_FILE=build/libs/*.jar
 
 # 컨테이너 내에서 실행될 디렉토리 설정
 WORKDIR /app
