@@ -58,10 +58,11 @@ jobs:
       - name: Deploy to Server
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SERVER_IP: ${{ secrets.SERVER_IP }}
         run: |
           echo "$SSH_PRIVATE_KEY" > private_key.pem
           chmod 600 private_key.pem
           mkdir -p ~/.ssh
           ssh-keyscan ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
           scp -i private_key.pem docker-compose.yml centos@${{ secrets.SERVER_IP }}:/path/to/deploy/
-          ssh -i private_key.pem centos@${{ secrets.SERVER_IP }} "docker pull nowjin/fitnessuniv:latest && docker-compose -f /path/to/deploy/docker-compose.yml up -d"
+          ssh -i private_key.pem centos@${{ secrets.SERVER_IP }} "docker pull nowjin/fitnessuniv:latest && cd /path/to/deploy && docker-compose up -d"
