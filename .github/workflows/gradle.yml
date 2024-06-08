@@ -65,8 +65,8 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
           ssh -i private_key.pem centos@${{ secrets.SERVER_IP }} << 'EOF'
-            docker pull nowjin/fitnessuniv:latest
-            docker stop fitnessuniv || true
-            docker rm fitnessuniv || true
-            docker run -d --name fitnessuniv -p 8080:8080 nowjin/fitnessuniv:latest
+            sudo docker pull nowjin/fitnessuniv:latest
+            sudo docker stop fitnessuniv || true
+            sudo docker rm fitnessuniv || true
+            sudo docker run -d --name fitnessuniv -p 8080:8080 nowjin/fitnessuniv:latest
           EOF
