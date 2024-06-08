@@ -9,11 +9,11 @@ import java.util.Date;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 public class JwtProvider {
     @Value("${secret-key}")
@@ -23,19 +23,34 @@ public class JwtProvider {
         return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String createToken(String userId) {
-        Date expiredDate = Date.from(Instant.now().plus(1, ChronoUnit.HOURS));
-        // Key 설정
-        // Key 는 java 의 key Keys 는 jjwt 의 Keys 임호화해서 Java key 에 저장
+    public String createAccessToken(String userId, String userName) {
+        Date expireTime = Date.from(Instant.now().plus(1, ChronoUnit.HOURS));
         Key key = getSigningKey();
-        // jwt 만들고 반환.
         return Jwts.builder()
-                // JWT 생성
-                .setSubject(userId)
+                .setId(userId)
+                .setSubject(userName)
                 .setIssuedAt(new Date())
-                .setExpiration(expiredDate)
+                .setExpiration(expireTime)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    public String createRefreshToken(String userId) {
+        Date expireTime = Date.from(Instant.now().plus(7, ChronoUnit.DAYS));
+        Key key = getSigningKey();
+        return Jwts.builder()
+                .setId(userId)
+                .setIssuedAt(new Date())
+                .setExpiration(expireTime)
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String refreshAccessToken(String refreshToken) {
+        Claims claims = getAllClaimsFromToken(refreshToken);
+        String userId = claims.getId();
+        String userName = claims.getSubject();
+        return createAccessToken(userId, userName);
     }
 
     // jwt 검증 메서드
@@ -44,23 +59,41 @@ public class JwtProvider {
         Key key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(jwt);
-            System.out.println("JWT validation 성공 TRUE");
+            log.info("JWT validation 성공");
             return true;
+        } catch (SecurityException | MalformedJwtException e) {
+            log.info("잘못된 JWT 서명입니다.");
+            return false;
+        } catch (ExpiredJwtException e) {
+            log.info("만료된 JWT 토큰입니다.");
+            return false;
+        } catch (UnsupportedJwtException e) {
+            log.info("지원되지 않는 JWT 토큰입니다.");
+            return false;
+        } catch (IllegalArgumentException e) {
+            log.info("JWT 토큰이 잘못되었습니다.");
+            return false;
         } catch (Exception e) {
-            System.out.println("JWT validation 실패 Provider:50번째줄");
-            e.printStackTrace();
+            log.info("기타 오류 발생");
             return false;
         }
     }
 
-    // Token 에서 id 추출
-    public String getUserIdFromToken(String jwt) {
-        Claims claims =
-                Jwts.parserBuilder()
-                        .setSigningKey(getSigningKey())
-                        .build()
-                        .parseClaimsJws(jwt)
-                        .getBody();
-        return claims.getSubject();
+    // Claims에서 모든 정보 추출
+    private Claims getAllClaimsFromToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
+    // userid받아오기
+    public String getUserIdFromToken(String token) {
+        return getAllClaimsFromToken(token).getId();
+    }
+
+    public String getUserNameFromToken(String token) {
+        return getAllClaimsFromToken(token).getSubject();
     }
 }

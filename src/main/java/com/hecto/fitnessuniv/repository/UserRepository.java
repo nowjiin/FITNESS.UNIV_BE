@@ -9,7 +9,6 @@ import com.hecto.fitnessuniv.entity.UserEntity;
 
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, String> {
-
     Optional<UserEntity> findByUserId(String userId);
 
     Optional<UserEntity> findByUserEmail(String email);

@@ -50,13 +50,18 @@ public class SecurityConfig {
                         request ->
                                 request.requestMatchers(
                                                 "/",
-                                                "/api/v1/oauth2/**",
-                                                "/login/oauth2/**",
+                                                // "/login/oauth2/**",
                                                 "/v3/api-docs/**",
                                                 "/swagger-ui.html",
                                                 "/swagger-ui/**",
+                                                "/api/v1/oauth2/**",
                                                 "/api/role",
+                                                "/api/mentor",
+                                                "/api/refresh-token",
+                                                "/chat/createRoom",
                                                 "/chat/roomNum/*",
+                                                "/paybutton**",
+                                                "/payment/data",
                                                 "/chat")
                                         .permitAll()
                                         .requestMatchers("/api/v1/user/*")
@@ -101,7 +106,7 @@ public class SecurityConfig {
     @Bean
     protected CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.addAllowedOrigin("http://localhost:3000"); // 도메인 허용
+        corsConfiguration.addAllowedOriginPattern("*"); // 모든 도메인 허용
         corsConfiguration.addAllowedMethod("*"); // 모든 HTTP 메서드 허용
         corsConfiguration.addAllowedHeader("*"); // 모든 헤더 허용
         corsConfiguration.setAllowCredentials(true); // 자격 증명 허용

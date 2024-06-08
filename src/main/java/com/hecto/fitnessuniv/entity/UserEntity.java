@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "user") // jakarta.persistence
@@ -45,6 +46,9 @@ public class UserEntity {
     @Column(name = "created_at", updatable = false)
     @CreatedDate // 시간 자동으로 넣어주는 @
     private LocalDateTime createdAt;
+
+    @Column(name = "refresh_token", nullable = true)
+    private String refreshToken;
 
     // 프론트에서 유저가 멘토인지 멘티인지 구분
     @Setter

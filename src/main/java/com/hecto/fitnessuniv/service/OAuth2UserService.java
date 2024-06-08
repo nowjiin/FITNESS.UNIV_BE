@@ -11,41 +11,39 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hecto.fitnessuniv.entity.UserEntity;
+import com.hecto.fitnessuniv.provider.JwtProvider;
 import com.hecto.fitnessuniv.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class OAuth2UserService extends DefaultOAuth2UserService {
     private final UserRepository userRepository;
+    private final JwtProvider jwtProvider;
 
     // 유저 반환
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2User oAuth2User = super.loadUser(userRequest);
-        // 테스트출력
-        System.out.println(oAuth2User);
 
-        // 레지스터 아이디 저장할 변수
         String oauthClientName = userRequest.getClientRegistration().getClientName();
-
-        try {
-            // 콘솔에 정보 찍는거 값들어오는거 테스트
-            System.out.println(new ObjectMapper().writeValueAsString(oAuth2User.getAttributes()));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // 값
         UserEntity userEntity = null;
         String userId = null;
         String userEmail = "";
         String userName = "";
 
+        try {
+            // 콘솔에 정보 찍는거 값들어오는거 테스트
+            System.out.println(new ObjectMapper().writeValueAsString(oAuth2User.getAttributes()));
+        } catch (Exception e) {
+            log.info("Error while loading user: {}", e.getMessage());
+        }
+
         if (oauthClientName.equals("naver")) {
             Object response = oAuth2User.getAttributes().get("response");
-
             if (response instanceof Map<?, ?> responseMap) {
                 userId =
                         ((String) responseMap.get("id"))
@@ -62,8 +60,12 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         }
 
         if (userEntity != null) {
+            // 리프레시 토큰 생성 및 저장
+            String refreshToken = jwtProvider.createRefreshToken(userId);
+            userEntity.setRefreshToken(refreshToken);
             userRepository.save(userEntity);
         }
+        userRepository.save(userEntity);
 
         Map<String, String> stringAttributes = new HashMap<>();
         stringAttributes.put("id", userId);
