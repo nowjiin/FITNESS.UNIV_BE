@@ -38,6 +38,7 @@ jobs:
         run: |
           mkdir -p src/main/resources
           echo "${{ secrets.APPLICATION_PROPERTIES }}" > src/main/resources/application.properties
+          echo "front-url=${{ secrets.FRONT_URL }}" >> src/main/resources/application.properties
 
       - name: Build with Gradle
         run: ./gradlew build
