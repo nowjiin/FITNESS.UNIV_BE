@@ -7,6 +7,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -19,6 +20,9 @@ import lombok.RequiredArgsConstructor;
 @Component
 @RequiredArgsConstructor
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+    @Value("${front-url}")
+    private String frontBaseUrl;
+
     private final JwtProvider jwtProvider;
 
     @Override
@@ -57,7 +61,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             response.addHeader("Refresh-Token", refreshToken);
             // 로그인 성공 후 처리할 로직 작성
             response.sendRedirect(
-                    "http://localhost:3000/role?accessToken="
+                    frontBaseUrl
+                            + "/role?accessToken="
                             + accessToken
                             + "&refreshToken="
                             + refreshToken);
@@ -85,7 +90,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
                 // 로그인 성공 후 처리할 로직 작성
                 response.sendRedirect(
-                        "http://localhost:3000/role?accessToken="
+                        frontBaseUrl
+                                + "/role?accessToken="
                                 + accessToken
                                 + "&refreshToken="
                                 + refreshToken);
