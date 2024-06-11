@@ -15,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:3000") // CORS 설정 추가
 @Slf4j
 public class RoleController {
     private final UserRepository userRepository;
