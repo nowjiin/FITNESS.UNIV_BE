@@ -50,13 +50,13 @@ public class SecurityConfig {
                         request ->
                                 request.requestMatchers(
                                                 "/",
-                                                // "/login/oauth2/**",
                                                 "/v3/api-docs/**",
                                                 "/swagger-ui.html",
                                                 "/swagger-ui/**",
                                                 "/api/v1/oauth2/**",
                                                 "/api/role",
                                                 "/api/mentor",
+                                                "/api/mentee",
                                                 "/api/refresh-token",
                                                 "/chat/createRoom",
                                                 "/chat/roomNum/*",
