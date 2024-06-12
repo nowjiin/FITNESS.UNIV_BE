@@ -50,6 +50,7 @@ public class JwtProvider {
         Claims claims = getAllClaimsFromToken(refreshToken);
         String userId = claims.getId();
         String userName = claims.getSubject();
+        log.info("AccessToken 재발급");
         return createAccessToken(userId, userName);
     }
 
