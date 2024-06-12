@@ -19,8 +19,8 @@ public class AuthController {
             try {
                 String token = bearerToken.substring(7);
                 if (jwtProvider.validate(token)) {
-                    //                    String newToken = jwtProvider.refreshToken(token);
-                    //                    return ResponseEntity.ok(Map.of("token", newToken));
+//                    String newToken = jwtProvider.refreshToken(token);
+//                    return ResponseEntity.ok(Map.of("token", newToken));
                 } else {
                     return ResponseEntity.status(401).body("Invalid token");
                 }
