@@ -22,11 +22,21 @@ public class MentorProfileEntity {
     @JoinColumn(name = "user_id", referencedColumnName = "user_id")
     private UserEntity user;
 
+    @Column(name = "user_name")
+    private String userName;
+
     @Column(name = "exercises", columnDefinition = "TEXT")
     private String exercises;
 
     @Column(name = "regions", columnDefinition = "TEXT")
     private String regions;
+
+    public void setUser(UserEntity user) {
+        this.user = user;
+        if (user != null) {
+            this.userName = user.getUserName();
+        }
+    }
 
     private String gender;
     private String rate;
