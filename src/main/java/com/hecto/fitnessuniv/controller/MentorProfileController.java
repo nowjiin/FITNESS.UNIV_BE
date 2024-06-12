@@ -47,11 +47,6 @@ public class MentorProfileController {
         return new ResponseEntity<>(savedMentorProfileEntity, HttpStatus.CREATED);
     }
 
-    //    @GetMapping("/mentor")
-    //    public ResponseEntity<List<MentorProfileEntity>> getAllMentorProfiles() {
-    //        List<MentorProfileEntity> mentors = mentorProfileRepository.findAll();
-    //        return new ResponseEntity<>(mentors, HttpStatus.OK);
-    //    }
     @GetMapping("/mentor")
     public ResponseEntity<List<MentorProfileEntity>> getAllMentorsProfile() {
         List<MentorProfileEntity> mentors = service.getAllMentorsProfile();

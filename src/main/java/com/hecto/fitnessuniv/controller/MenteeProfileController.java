@@ -1,5 +1,8 @@
 package com.hecto.fitnessuniv.controller;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -7,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import com.hecto.fitnessuniv.entity.MenteeProfileEntity;
 import com.hecto.fitnessuniv.entity.UserEntity;
 import com.hecto.fitnessuniv.provider.JwtProvider;
+import com.hecto.fitnessuniv.repository.MenteeProfileRepository;
 import com.hecto.fitnessuniv.repository.UserRepository;
 import com.hecto.fitnessuniv.service.MenteeProfileService;
 
@@ -16,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api")
 @RequiredArgsConstructor
 public class MenteeProfileController {
+    private final MenteeProfileRepository menteeProfileRepository;
     private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
     private final MenteeProfileService service;
@@ -40,5 +45,21 @@ public class MenteeProfileController {
         MenteeProfileEntity savedMenteeProfileEntity =
                 service.saveMenteeProfile(menteeProfileEntity);
         return new ResponseEntity<>(savedMenteeProfileEntity, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/mentee")
+    public ResponseEntity<List<MenteeProfileEntity>> getAllMenteesProfile() {
+        List<MenteeProfileEntity> mentees = service.getAllMenteesProfile();
+        return new ResponseEntity<>(mentees, HttpStatus.OK);
+    }
+
+    @GetMapping("/mentee/{id}")
+    public ResponseEntity<MenteeProfileEntity> getMenteeById(@PathVariable Long id) {
+        Optional<MenteeProfileEntity> menteeProfile = menteeProfileRepository.findById(id);
+        if (menteeProfile.isPresent()) {
+            return new ResponseEntity<>(menteeProfile.get(), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 }
