@@ -12,7 +12,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
+import com.hecto.fitnessuniv.entity.UserEntity;
 import com.hecto.fitnessuniv.provider.JwtProvider;
+import com.hecto.fitnessuniv.repository.UserRepository;
 import com.hecto.fitnessuniv.service.CustomOAuth2User;
 
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private String frontBaseUrl;
 
     private final JwtProvider jwtProvider;
+    private final UserRepository userRepository;
 
     @Override
     public void onAuthenticationSuccess(
@@ -38,14 +41,21 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 jwtProvider.createAccessToken(oAuth2User.getId(), oAuth2User.getName());
         String refreshToken = jwtProvider.createRefreshToken(oAuth2User.getId());
 
+        // 사용자 역할 확인
+        UserEntity user =
+                userRepository
+                        .findByUserId(oAuth2User.getId())
+                        .orElseThrow(() -> new RuntimeException("User not found"));
+        String role = user.getRole();
+
         // 네이버 구글 로직 따로 처리하기 위해 클라이언트 이름 추출
         String oauthClientName = request.getRequestURI().contains("naver") ? "naver" : "google";
 
         if (oauthClientName.equals("google")) {
-            handleGoogleLogin(response, attributes, accessToken, refreshToken);
+            handleGoogleLogin(response, attributes, accessToken, refreshToken, role);
         }
         if (oauthClientName.equals("naver")) {
-            handleNaverLogin(response, attributes, accessToken, refreshToken);
+            handleNaverLogin(response, attributes, accessToken, refreshToken, role);
         }
     }
 
@@ -53,19 +63,24 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             HttpServletResponse response,
             Map<String, Object> attributes,
             String accessToken,
-            String refreshToken)
+            String refreshToken,
+            String role)
             throws IOException {
         if (attributes != null && attributes.containsKey("email")) {
             // 응답 헤더에 JWT 토큰 추가
             response.addHeader("Authorization", "Bearer " + accessToken);
             response.addHeader("Refresh-Token", refreshToken);
             // 로그인 성공 후 처리할 로직 작성
-            response.sendRedirect(
-                    frontBaseUrl
-                            + "/role?accessToken="
-                            + accessToken
-                            + "&refreshToken="
-                            + refreshToken);
+            if (role != null && !role.isEmpty()) {
+                response.sendRedirect(frontBaseUrl + "/");
+            } else {
+                response.sendRedirect(
+                        frontBaseUrl
+                                + "/role?accessToken="
+                                + accessToken
+                                + "&refreshToken="
+                                + refreshToken);
+            }
         } else {
             System.out.println("Google Login - FAIL");
             response.sendRedirect("/error");
@@ -76,7 +91,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             HttpServletResponse response,
             Map<String, Object> attributes,
             String accessToken,
-            String refreshToken)
+            String refreshToken,
+            String role)
             throws IOException {
         Object responseObject = attributes.get("response");
         if (responseObject instanceof Map<?, ?> responseMap) {
@@ -89,14 +105,16 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 response.addHeader("Refresh-Token", refreshToken);
 
                 // 로그인 성공 후 처리할 로직 작성
-                response.sendRedirect(
-                        frontBaseUrl
-                                + "/role?accessToken="
-                                + accessToken
-                                + "&refreshToken="
-                                + refreshToken);
-                System.out.println("발행한 네이버 accessToken : " + accessToken);
-                System.out.println("발행한 네이버 refreshToken : " + refreshToken);
+                if (role != null && !role.isEmpty()) {
+                    response.sendRedirect(frontBaseUrl + "/");
+                } else {
+                    response.sendRedirect(
+                            frontBaseUrl
+                                    + "/role?accessToken="
+                                    + accessToken
+                                    + "&refreshToken="
+                                    + refreshToken);
+                }
             } else {
                 System.out.println("Naver Login - FAIL");
                 response.sendRedirect("/error");
