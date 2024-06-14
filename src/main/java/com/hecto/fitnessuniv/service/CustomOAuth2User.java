@@ -16,8 +16,9 @@ import lombok.NoArgsConstructor;
 @Getter
 public class CustomOAuth2User implements OAuth2User {
     private OAuth2User oAuth2User;
-
     @Getter private Map<String, String> stringAttributes;
+    private String accessToken;
+    private String refreshToken;
 
     @Override
     public Map<String, Object> getAttributes() {
