@@ -53,8 +53,29 @@ public class UserController {
             String token = bearerToken.substring(7);
             if (jwtProvider.validate(token)) {
                 String userId = jwtProvider.getUserIdFromToken(token);
-                System.out.println("Extracted User ID: " + userId);
                 return ResponseEntity.ok(userId);
+            } else {
+                return ResponseEntity.status(401).body("Invalid token");
+            }
+        } else {
+            return ResponseEntity.status(400).body("Bearer token is missing or invalid");
+        }
+    }
+
+    @GetMapping("/get-user-name")
+    public ResponseEntity<String> getUserName(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            String token = bearerToken.substring(7);
+            if (jwtProvider.validate(token)) {
+                String userId = jwtProvider.getUserIdFromToken(token);
+                Optional<UserEntity> userEntityOptional = userRepository.findByUserId(userId);
+                if (userEntityOptional.isPresent()) {
+                    UserEntity userEntity = userEntityOptional.get();
+                    return ResponseEntity.ok(userEntity.getUserName());
+                } else {
+                    return ResponseEntity.status(404).body("User not found");
+                }
             } else {
                 return ResponseEntity.status(401).body("Invalid token");
             }
