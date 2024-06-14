@@ -62,6 +62,7 @@ public class SecurityConfig {
                                                 "/api/mentee-profile",
                                                 "/api/refresh-token",
                                                 "/api/get-user-id",
+                                                "/api/posts/**",
                                                 "/chat/createRoom",
                                                 "/chat/roomNum/*",
                                                 "/paybutton**",

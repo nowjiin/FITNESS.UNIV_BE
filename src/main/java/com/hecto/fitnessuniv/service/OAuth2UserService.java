@@ -35,8 +35,8 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         String userEmail = "";
         String userName = "";
 
+        // 디버깅용
         try {
-            // 콘솔에 정보 찍는거 값들어오는거 테스트
             System.out.println(new ObjectMapper().writeValueAsString(oAuth2User.getAttributes()));
         } catch (Exception e) {
             log.info("Error while loading user: {}", e.getMessage());
@@ -59,19 +59,31 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
             userEntity = new UserEntity(userId, userName, userEmail, "google", "ROLE_USER");
         }
 
-        if (userEntity != null) {
-            // 리프레시 토큰 생성 및 저장
-            String refreshToken = jwtProvider.createRefreshToken(userId);
-            userEntity.setRefreshToken(refreshToken);
-            userRepository.save(userEntity);
+        // 기존 사용자를 찾고 ROLE 정보가 있는지 확인
+        UserEntity existingUser = userRepository.findByUserId(userId).orElse(null);
+        String accessToken = "";
+        String refreshToken = "";
+
+        if (existingUser == null
+                || (existingUser.getRole() == null || existingUser.getRole().isEmpty())) {
+            if (userEntity != null) {
+                // 리프레시 토큰 생성 및 저장
+                refreshToken = jwtProvider.createRefreshToken(userId);
+                accessToken = jwtProvider.createAccessToken(userId, userName);
+                userEntity.setRefreshToken(refreshToken);
+                userRepository.save(userEntity);
+            }
+        } else { // 기존 사용자 정보가 존재하고 ROLE이 있는 경우
+            userEntity = existingUser;
+            refreshToken = existingUser.getRefreshToken();
+            accessToken = jwtProvider.createAccessToken(userId, userName);
         }
-        userRepository.save(userEntity);
 
         Map<String, String> stringAttributes = new HashMap<>();
         stringAttributes.put("id", userId);
         stringAttributes.put("name", userName);
         stringAttributes.put("email", userEmail);
 
-        return new CustomOAuth2User(oAuth2User, stringAttributes);
+        return new CustomOAuth2User(oAuth2User, stringAttributes, accessToken, refreshToken);
     }
 }

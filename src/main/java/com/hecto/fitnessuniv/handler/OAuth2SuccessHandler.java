@@ -47,7 +47,6 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                         .findByUserId(oAuth2User.getId())
                         .orElseThrow(() -> new RuntimeException("User not found"));
         String role = user.getRole();
-
         // 네이버 구글 로직 따로 처리하기 위해 클라이언트 이름 추출
         String oauthClientName = request.getRequestURI().contains("naver") ? "naver" : "google";
 
@@ -71,8 +70,13 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             response.addHeader("Authorization", "Bearer " + accessToken);
             response.addHeader("Refresh-Token", refreshToken);
             // 로그인 성공 후 처리할 로직 작성
-            if (role != null && !role.isEmpty()) {
-                response.sendRedirect(frontBaseUrl + "/");
+            if (role != null && (role.equals("ROLE_MENTOR") || role.equals("ROLE_MENTEE"))) {
+                response.sendRedirect(
+                        frontBaseUrl
+                                + "/?accessToken="
+                                + accessToken
+                                + "&refreshToken="
+                                + refreshToken);
             } else {
                 response.sendRedirect(
                         frontBaseUrl
@@ -97,16 +101,18 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         Object responseObject = attributes.get("response");
         if (responseObject instanceof Map<?, ?> responseMap) {
             if (responseMap.containsKey("email")) {
-                // 디버깅을 위한 로그 추가
-                System.out.println("Naver Login - SUCCESS");
-
                 // 응답 헤더에 JWT 토큰 추가
                 response.addHeader("Authorization", "Bearer " + accessToken);
                 response.addHeader("Refresh-Token", refreshToken);
 
                 // 로그인 성공 후 처리할 로직 작성
-                if (role != null && !role.isEmpty()) {
-                    response.sendRedirect(frontBaseUrl + "/");
+                if (role != null && (role.equals("ROLE_MENTOR") || role.equals("ROLE_MENTEE"))) {
+                    response.sendRedirect(
+                            frontBaseUrl
+                                    + "/?accessToken="
+                                    + accessToken
+                                    + "&refreshToken="
+                                    + refreshToken);
                 } else {
                     response.sendRedirect(
                             frontBaseUrl
