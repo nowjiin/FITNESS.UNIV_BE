@@ -74,9 +74,10 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
                 userRepository.save(userEntity);
             }
         } else { // 기존 사용자 정보가 존재하고 ROLE이 있는 경우
-            userEntity = existingUser;
             refreshToken = existingUser.getRefreshToken();
             accessToken = jwtProvider.createAccessToken(userId, userName);
+            existingUser.setRefreshToken(refreshToken);
+            userRepository.save(existingUser);
         }
 
         Map<String, String> stringAttributes = new HashMap<>();

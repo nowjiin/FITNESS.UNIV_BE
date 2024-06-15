@@ -13,7 +13,6 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 
 import com.hecto.fitnessuniv.entity.UserEntity;
-import com.hecto.fitnessuniv.provider.JwtProvider;
 import com.hecto.fitnessuniv.repository.UserRepository;
 import com.hecto.fitnessuniv.service.CustomOAuth2User;
 
@@ -25,7 +24,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     @Value("${front-url}")
     private String frontBaseUrl;
 
-    private final JwtProvider jwtProvider;
+    //    private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
 
     @Override
@@ -36,10 +35,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         CustomOAuth2User oAuth2User = (CustomOAuth2User) authentication.getPrincipal();
         Map<String, Object> attributes = oAuth2User.getAttributes();
 
-        // 액세스 토큰 및 리프레시 토큰 생성
-        String accessToken =
-                jwtProvider.createAccessToken(oAuth2User.getId(), oAuth2User.getName());
-        String refreshToken = jwtProvider.createRefreshToken(oAuth2User.getId());
+        String accessToken = oAuth2User.getAccessToken();
+        String refreshToken = oAuth2User.getRefreshToken();
 
         // 사용자 역할 확인
         UserEntity user =
