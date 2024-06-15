@@ -1,7 +1,6 @@
 package com.hecto.fitnessuniv.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -9,102 +8,55 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.hecto.fitnessuniv.entity.PostEntity;
-import com.hecto.fitnessuniv.entity.UserEntity;
 import com.hecto.fitnessuniv.provider.JwtProvider;
-import com.hecto.fitnessuniv.repository.UserRepository;
 import com.hecto.fitnessuniv.service.PostService;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/posts")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class PostController {
     private final PostService postService;
     private final JwtProvider jwtProvider;
-    private final UserRepository userRepository;
 
-    @GetMapping
-    public ResponseEntity<List<PostEntity>> getAllPosts(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            String token = bearerToken.substring(7);
-            if (jwtProvider.validate(token)) {
-                return ResponseEntity.ok(postService.getAllPosts());
-            }
-        }
-        return ResponseEntity.status(401).build();
+    @GetMapping("/posts")
+    public ResponseEntity<List<PostEntity>> getAllPosts() {
+        return ResponseEntity.ok(postService.getAllPosts());
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<PostEntity> getPostById(
-            @PathVariable Long id, HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            String token = bearerToken.substring(7);
-            if (jwtProvider.validate(token)) {
-                String userId = jwtProvider.getUserIdFromToken(token);
-                return ResponseEntity.ok(postService.getPostById(id));
-            }
-        }
-        return ResponseEntity.status(401).build();
+    @GetMapping("/posts/{id}")
+    public ResponseEntity<PostEntity> getPostById(@PathVariable Long id) {
+        return ResponseEntity.ok(postService.getPostById(id));
     }
 
-    @PostMapping
+    @PostMapping("/posts")
     public ResponseEntity<PostEntity> createPost(
-            @RequestBody PostEntity postEntity, HttpServletRequest request) {
+            HttpServletRequest request, @RequestBody PostEntity postEntity) {
         String bearerToken = request.getHeader("Authorization");
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             String token = bearerToken.substring(7);
             if (jwtProvider.validate(token)) {
                 String userId = jwtProvider.getUserIdFromToken(token);
-                Optional<UserEntity> userOptional = userRepository.findById(userId);
-                if (userOptional.isPresent()) {
-                    postEntity.setAuthor(userOptional.get().getUserName());
-                    return ResponseEntity.ok(postService.createPost(postEntity));
-                } else {
-                    return ResponseEntity.status(404).body(null);
-                }
+                PostEntity createdPost = postService.createPost(postEntity, userId);
+                return ResponseEntity.ok(createdPost);
+            } else {
+                return ResponseEntity.status(401).body(null);
             }
+        } else {
+            return ResponseEntity.status(400).body(null);
         }
-        return ResponseEntity.status(401).build();
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/posts/{id}")
     public ResponseEntity<PostEntity> updatePost(
-            @PathVariable Long id, @RequestBody PostEntity postEntity, HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            String token = bearerToken.substring(7);
-            if (jwtProvider.validate(token)) {
-                String userId = jwtProvider.getUserIdFromToken(token);
-                Optional<UserEntity> userOptional = userRepository.findById(userId);
-                if (userOptional.isPresent()) {
-                    return ResponseEntity.ok(postService.updatePost(id, postEntity));
-                } else {
-                    return ResponseEntity.status(404).body(null);
-                }
-            }
-        }
-        return ResponseEntity.status(401).build();
+            @PathVariable Long id, @RequestBody PostEntity postEntity) {
+        return ResponseEntity.ok(postService.updatePost(id, postEntity));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePost(@PathVariable Long id, HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            String token = bearerToken.substring(7);
-            if (jwtProvider.validate(token)) {
-                String userId = jwtProvider.getUserIdFromToken(token);
-                Optional<UserEntity> userOptional = userRepository.findById(userId);
-                if (userOptional.isPresent()) {
-                    postService.deletePost(id);
-                    return ResponseEntity.noContent().build();
-                } else {
-                    return ResponseEntity.status(404).build();
-                }
-            }
-        }
-        return ResponseEntity.status(401).build();
+    @DeleteMapping("/posts/{id}")
+    public ResponseEntity<Void> deletePost(@PathVariable Long id) {
+        postService.deletePost(id);
+        return ResponseEntity.ok().build();
     }
 }

@@ -6,7 +6,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hecto.fitnessuniv.entity.PostEntity;
+import com.hecto.fitnessuniv.entity.UserEntity;
 import com.hecto.fitnessuniv.repository.PostRepository;
+import com.hecto.fitnessuniv.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -14,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
+    private final UserRepository userRepository;
 
     public List<PostEntity> getAllPosts() {
         return postRepository.findAll();
@@ -26,7 +29,13 @@ public class PostService {
     }
 
     @Transactional
-    public PostEntity createPost(PostEntity postEntity) {
+    public PostEntity createPost(PostEntity postEntity, String userId) {
+        UserEntity user =
+                userRepository
+                        .findByUserId(userId)
+                        .orElseThrow(() -> new RuntimeException("User not found"));
+        postEntity.setUserId(user);
+        postEntity.setAuthor(user.getUserName());
         return postRepository.save(postEntity);
     }
 

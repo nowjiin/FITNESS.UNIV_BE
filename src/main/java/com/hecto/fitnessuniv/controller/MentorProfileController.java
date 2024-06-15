@@ -55,6 +55,16 @@ public class MentorProfileController {
         return new ResponseEntity<>(mentors, HttpStatus.OK);
     }
 
+    @GetMapping("/mentor/{id}")
+    public ResponseEntity<?> getMentorProfile(@PathVariable Long id) {
+        Optional<MentorProfileEntity> mentorProfile = mentorProfileRepository.findById(id);
+        if (mentorProfile.isPresent()) {
+            return ResponseEntity.ok(mentorProfile.get());
+        } else {
+            return ResponseEntity.status(404).body("Mentor not found");
+        }
+    }
+
     @GetMapping("/mentor-profile")
     public ResponseEntity<MentorProfileEntity> getMentorProfile(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
