@@ -19,6 +19,13 @@ public class MenteeProfileService {
     }
 
     public List<MenteeProfileEntity> getAllMenteesProfile() {
+        List<MenteeProfileEntity> mentees = repository.findAll();
+        mentees.forEach(
+                mentee -> {
+                    if (mentee.getUser() != null) {
+                        mentee.setUserName(mentee.getUser().getUserName());
+                    }
+                });
         return repository.findAll();
     }
 }

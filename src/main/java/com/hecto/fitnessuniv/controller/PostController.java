@@ -50,8 +50,19 @@ public class PostController {
 
     @PutMapping("/posts/{id}")
     public ResponseEntity<PostEntity> updatePost(
-            @PathVariable Long id, @RequestBody PostEntity postEntity) {
-        return ResponseEntity.ok(postService.updatePost(id, postEntity));
+            HttpServletRequest request, @PathVariable Long id, @RequestBody PostEntity postEntity) {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            String token = bearerToken.substring(7);
+            if (jwtProvider.validate(token)) {
+                String userId = jwtProvider.getUserIdFromToken(token);
+                return ResponseEntity.ok(postService.updatePost(id, postEntity, userId));
+            } else {
+                return ResponseEntity.status(401).body(null);
+            }
+        } else {
+            return ResponseEntity.status(400).body(null);
+        }
     }
 
     @DeleteMapping("/posts/{id}")

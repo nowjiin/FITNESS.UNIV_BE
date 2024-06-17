@@ -40,11 +40,14 @@ public class PostService {
     }
 
     @Transactional
-    public PostEntity updatePost(Long id, PostEntity postEntity) {
+    public PostEntity updatePost(Long id, PostEntity postEntity, String userId) {
         PostEntity existingPost = getPostById(id);
+        if (!existingPost.getUserId().getUserId().equals(userId)) {
+            throw new RuntimeException("Unauthorized user");
+        }
         existingPost.setTitle(postEntity.getTitle());
         existingPost.setContent(postEntity.getContent());
-        existingPost.setAuthor(postEntity.getAuthor());
+
         return postRepository.save(existingPost);
     }
 
