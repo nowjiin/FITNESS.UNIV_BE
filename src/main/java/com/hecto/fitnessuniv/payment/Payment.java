@@ -28,6 +28,4 @@ public class Payment {
     private String payPrice;
     private String trDay;
     private String trTime;
-
-    // Getters and Setters
 }
