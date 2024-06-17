@@ -3,6 +3,8 @@ package com.hecto.fitnessuniv.controller;
 import java.util.List;
 import java.util.Optional;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -60,6 +62,28 @@ public class MenteeProfileController {
             return new ResponseEntity<>(menteeProfile.get(), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @GetMapping("/mentee-profile")
+    public ResponseEntity<MenteeProfileEntity> getMenteeProfile(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            String token = bearerToken.substring(7);
+            if (jwtProvider.validate(token)) {
+                String userId = jwtProvider.getUserIdFromToken(token);
+                Optional<MenteeProfileEntity> menteeProfileOptional =
+                        menteeProfileRepository.findByUserUserId(userId);
+                if (menteeProfileOptional.isPresent()) {
+                    return new ResponseEntity<>(menteeProfileOptional.get(), HttpStatus.OK);
+                } else {
+                    return ResponseEntity.status(404).body(null);
+                }
+            } else {
+                return ResponseEntity.status(404).body(null);
+            }
+        } else {
+            return ResponseEntity.status(404).body(null);
         }
     }
 }
