@@ -69,6 +69,7 @@ public class SecurityConfig {
                                                 "/payment/details**",
                                                 "/payment/approval**",
                                                 "/proxy/settlebank",
+                                                "/auth/user",
                                                 "/chat")
                                         .permitAll()
                                         .requestMatchers("/api/v1/user/*")
