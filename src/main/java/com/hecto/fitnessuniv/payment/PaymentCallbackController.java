@@ -7,6 +7,7 @@ import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -17,6 +18,9 @@ import com.hecto.fitnessuniv.paymentapproval.PaymentApprovalRepository;
 @RestController
 @CrossOrigin(origins = "*") // 모든 도메인 허용
 public class PaymentCallbackController {
+
+    @Value("${front-url}")
+    private String frontUrl;
 
     private static final Logger logger = LoggerFactory.getLogger(PaymentCallbackController.class);
 
@@ -63,7 +67,8 @@ public class PaymentCallbackController {
         // 리다이렉트 URL에 필요한 파라미터 추가
         String redirectUrl =
                 String.format(
-                        "http://localhost:3000/payment/success?mercntId=%s&authNo=%s&reqDay=%s&reqTime=%s",
+                        frontUrl+
+                        "/payment/success?mercntId=%s&authNo=%s&reqDay=%s&reqTime=%s",
                         mercntId, authNo, trDay, trTime);
 
         // 리다이렉트 응답을 반환
