@@ -86,4 +86,33 @@ public class MentorProfileController {
             return ResponseEntity.status(400).body(null);
         }
     }
+
+    @PutMapping("/mentor-profile")
+    public ResponseEntity<?> updateMentorProfile(
+            HttpServletRequest request, @RequestBody MentorProfileEntity updatedProfile) {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            String token = bearerToken.substring(7);
+            if (jwtProvider.validate(token)) {
+                String userId = jwtProvider.getUserIdFromToken(token);
+                Optional<MentorProfileEntity> mentorProfileOptional =
+                        mentorProfileRepository.findByUserUserId(userId);
+                if (mentorProfileOptional.isPresent()) {
+                    MentorProfileEntity mentorProfile = mentorProfileOptional.get();
+                    // Update the mentor profile with the new details
+                    mentorProfile.setRate(updatedProfile.getRate());
+                    mentorProfile.setDetails(updatedProfile.getDetails());
+                    // Save the updated profile
+                    MentorProfileEntity savedProfile = mentorProfileRepository.save(mentorProfile);
+                    return ResponseEntity.ok(savedProfile);
+                } else {
+                    return ResponseEntity.status(404).body("Mentor profile not found");
+                }
+            } else {
+                return ResponseEntity.status(401).body("Invalid token");
+            }
+        } else {
+            return ResponseEntity.status(400).body("Authorization header missing or invalid");
+        }
+    }
 }
