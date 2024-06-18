@@ -52,6 +52,7 @@ public class ChatController {
     @CrossOrigin
     @GetMapping("/auth/user")
     public Mono<Map<String, String>> getUserInfo(@RequestHeader("Authorization") String token) {
+        System.out.println("Received token: " + token); // 로그 추가
         String jwt = token.substring(7); // "Bearer " 부분 제거
         String userId = jwtProvider.getUserIdFromToken(jwt);
 
