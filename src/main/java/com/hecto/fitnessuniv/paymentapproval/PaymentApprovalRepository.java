@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PaymentApprovalRepository extends JpaRepository<PaymentApproval, Long> {
     List<PaymentApproval> findByUserId(String userId);
+
+    List<PaymentApproval> findByMentorId(String mentorId);
 }

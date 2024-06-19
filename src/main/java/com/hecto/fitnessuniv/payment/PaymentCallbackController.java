@@ -103,6 +103,7 @@ public class PaymentCallbackController {
         String trTime = params.get("trTime");
         String userId = params.get("userId");
         String mentorUserName = params.get("mentorUserName");
+        String mentorId = params.get("mentorId");
 
         // PaymentApproval 객체를 생성하고 승인 파라미터 값을 설정
         PaymentApproval paymentApproval = new PaymentApproval();
@@ -122,6 +123,7 @@ public class PaymentCallbackController {
         paymentApproval.setTrTime(trTime);
         paymentApproval.setUserId(userId); // userId 값을 설정
         paymentApproval.setMentorUserName(mentorUserName);
+        paymentApproval.setMentorId(mentorId);
 
         // PaymentApproval 객체를 새로운 데이터베이스에 저장
         paymentApprovalRepository.save(paymentApproval);
@@ -150,6 +152,14 @@ public class PaymentCallbackController {
         String userId = jwtProvider.getUserIdFromToken(jwtToken);
         logger.info("Fetching payment approvals for userId: {}", userId);
         List<PaymentApproval> paymentApprovals = paymentApprovalRepository.findByUserId(userId);
+        return ResponseEntity.ok(paymentApprovals);
+    }
+
+    @GetMapping("/payment/approval/mentor")
+    public ResponseEntity<List<PaymentApproval>> getPaymentApprovalsByMentorId(
+            @RequestParam String mentorId) {
+        logger.info("Fetching payment approvals for mentorId: {}", mentorId);
+        List<PaymentApproval> paymentApprovals = paymentApprovalRepository.findByMentorId(mentorId);
         return ResponseEntity.ok(paymentApprovals);
     }
 }
