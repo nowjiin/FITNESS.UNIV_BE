@@ -57,6 +57,7 @@ public class SecurityConfig {
                                                 "/api/role",
                                                 "api/check-user-role",
                                                 "/api/mentor",
+                                                "/api/mentor/**",
                                                 "/api/mentee",
                                                 "/api/mentor-profile",
                                                 "/api/mentee-profile",

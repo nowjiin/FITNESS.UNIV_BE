@@ -1,5 +1,6 @@
 package com.hecto.fitnessuniv.payment;
 
+import java.util.List;
 import java.util.Map;
 
 import jakarta.transaction.Transactional;
@@ -14,6 +15,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.hecto.fitnessuniv.paymentapproval.PaymentApproval;
 import com.hecto.fitnessuniv.paymentapproval.PaymentApprovalRepository;
+import com.hecto.fitnessuniv.provider.JwtProvider;
 
 @RestController
 @CrossOrigin(origins = "*") // 모든 도메인 허용
@@ -27,6 +29,7 @@ public class PaymentCallbackController {
     @Autowired private PaymentRepository paymentRepository;
     @Autowired private PaymentApprovalRepository paymentApprovalRepository;
     @Autowired private RestTemplate restTemplate;
+    @Autowired private JwtProvider jwtProvider;
 
     // 결제 콜백을 처리하는 메서드
     @Transactional
@@ -67,9 +70,11 @@ public class PaymentCallbackController {
         // 리다이렉트 URL에 필요한 파라미터 추가
         String redirectUrl =
                 String.format(
-                        frontUrl+
-                        "/payment/success?mercntId=%s&authNo=%s&reqDay=%s&reqTime=%s",
-                        mercntId, authNo, trDay, trTime);
+                        frontUrl + "/payment/success?mercntId=%s&authNo=%s&reqDay=%s&reqTime=%s",
+                        mercntId,
+                        authNo,
+                        trDay,
+                        trTime);
 
         // 리다이렉트 응답을 반환
         return ResponseEntity.status(302).header("Location", redirectUrl).build();
@@ -96,6 +101,8 @@ public class PaymentCallbackController {
         String criDutyFreePrice = params.get("criDutyFreePrice");
         String trDay = params.get("trDay");
         String trTime = params.get("trTime");
+        String userId = params.get("userId");
+        String mentorUserName = params.get("mentorUserName");
 
         // PaymentApproval 객체를 생성하고 승인 파라미터 값을 설정
         PaymentApproval paymentApproval = new PaymentApproval();
@@ -113,6 +120,8 @@ public class PaymentCallbackController {
         paymentApproval.setCriDutyFreePrice(criDutyFreePrice);
         paymentApproval.setTrDay(trDay);
         paymentApproval.setTrTime(trTime);
+        paymentApproval.setUserId(userId); // userId 값을 설정
+        paymentApproval.setMentorUserName(mentorUserName);
 
         // PaymentApproval 객체를 새로운 데이터베이스에 저장
         paymentApprovalRepository.save(paymentApproval);
@@ -128,5 +137,19 @@ public class PaymentCallbackController {
         String url = "https://tbezauthapi.settlebank.co.kr/v3/APIPayApprov.do";
         ResponseEntity<String> response = restTemplate.postForEntity(url, params, String.class);
         return response;
+    }
+
+    // userId로 PaymentApproval을 조회하는 메서드
+    @GetMapping("/payment/approval")
+    public ResponseEntity<List<PaymentApproval>> getPaymentApprovalsByUserId(
+            @RequestHeader("Authorization") String token) {
+        String jwtToken = token.replace("Bearer ", "");
+        if (!jwtProvider.validate(jwtToken)) {
+            return ResponseEntity.status(401).build();
+        }
+        String userId = jwtProvider.getUserIdFromToken(jwtToken);
+        logger.info("Fetching payment approvals for userId: {}", userId);
+        List<PaymentApproval> paymentApprovals = paymentApprovalRepository.findByUserId(userId);
+        return ResponseEntity.ok(paymentApprovals);
     }
 }
