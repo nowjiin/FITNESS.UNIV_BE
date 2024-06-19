@@ -31,4 +31,6 @@ public class PaymentApproval {
     private String criDutyFreePrice;
     private String trDay;
     private String trTime;
+    private String userId;
+    private String mentorUserName;
 }

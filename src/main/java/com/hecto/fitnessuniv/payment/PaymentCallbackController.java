@@ -67,9 +67,11 @@ public class PaymentCallbackController {
         // 리다이렉트 URL에 필요한 파라미터 추가
         String redirectUrl =
                 String.format(
-                        frontUrl+
-                        "/payment/success?mercntId=%s&authNo=%s&reqDay=%s&reqTime=%s",
-                        mercntId, authNo, trDay, trTime);
+                        frontUrl + "/payment/success?mercntId=%s&authNo=%s&reqDay=%s&reqTime=%s",
+                        mercntId,
+                        authNo,
+                        trDay,
+                        trTime);
 
         // 리다이렉트 응답을 반환
         return ResponseEntity.status(302).header("Location", redirectUrl).build();
@@ -96,6 +98,8 @@ public class PaymentCallbackController {
         String criDutyFreePrice = params.get("criDutyFreePrice");
         String trDay = params.get("trDay");
         String trTime = params.get("trTime");
+        String userId = params.get("userId");
+        String mentorUserName = params.get("mentorUserName");
 
         // PaymentApproval 객체를 생성하고 승인 파라미터 값을 설정
         PaymentApproval paymentApproval = new PaymentApproval();
@@ -113,6 +117,8 @@ public class PaymentCallbackController {
         paymentApproval.setCriDutyFreePrice(criDutyFreePrice);
         paymentApproval.setTrDay(trDay);
         paymentApproval.setTrTime(trTime);
+        paymentApproval.setUserId(userId); // userId 값을 설정
+        paymentApproval.setMentorUserName(mentorUserName);
 
         // PaymentApproval 객체를 새로운 데이터베이스에 저장
         paymentApprovalRepository.save(paymentApproval);
