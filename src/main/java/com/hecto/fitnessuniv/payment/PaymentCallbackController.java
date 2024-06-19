@@ -1,5 +1,6 @@
 package com.hecto.fitnessuniv.payment;
 
+import java.util.List;
 import java.util.Map;
 
 import jakarta.transaction.Transactional;
@@ -14,6 +15,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.hecto.fitnessuniv.paymentapproval.PaymentApproval;
 import com.hecto.fitnessuniv.paymentapproval.PaymentApprovalRepository;
+import com.hecto.fitnessuniv.provider.JwtProvider;
 
 @RestController
 @CrossOrigin(origins = "*") // 모든 도메인 허용
@@ -27,6 +29,7 @@ public class PaymentCallbackController {
     @Autowired private PaymentRepository paymentRepository;
     @Autowired private PaymentApprovalRepository paymentApprovalRepository;
     @Autowired private RestTemplate restTemplate;
+    @Autowired private JwtProvider jwtProvider;
 
     // 결제 콜백을 처리하는 메서드
     @Transactional
@@ -134,5 +137,19 @@ public class PaymentCallbackController {
         String url = "https://tbezauthapi.settlebank.co.kr/v3/APIPayApprov.do";
         ResponseEntity<String> response = restTemplate.postForEntity(url, params, String.class);
         return response;
+    }
+
+    // userId로 PaymentApproval을 조회하는 메서드
+    @GetMapping("/payment/approval")
+    public ResponseEntity<List<PaymentApproval>> getPaymentApprovalsByUserId(
+            @RequestHeader("Authorization") String token) {
+        String jwtToken = token.replace("Bearer ", "");
+        if (!jwtProvider.validate(jwtToken)) {
+            return ResponseEntity.status(401).build();
+        }
+        String userId = jwtProvider.getUserIdFromToken(jwtToken);
+        logger.info("Fetching payment approvals for userId: {}", userId);
+        List<PaymentApproval> paymentApprovals = paymentApprovalRepository.findByUserId(userId);
+        return ResponseEntity.ok(paymentApprovals);
     }
 }
