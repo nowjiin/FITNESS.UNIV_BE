@@ -80,10 +80,41 @@ public class MenteeProfileController {
                     return ResponseEntity.status(404).body(null);
                 }
             } else {
-                return ResponseEntity.status(404).body(null);
+                return ResponseEntity.status(401).body(null);
             }
         } else {
-            return ResponseEntity.status(404).body(null);
+            return ResponseEntity.status(400).body(null);
+        }
+    }
+
+    @PutMapping("/mentee-profile")
+    public ResponseEntity<?> updateMenteeProfile(
+            HttpServletRequest request, @RequestBody MenteeProfileEntity updatedProfileData) {
+
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            String token = bearerToken.substring(7);
+            if (jwtProvider.validate(token)) {
+                String userId = jwtProvider.getUserIdFromToken(token);
+                // 현재 사용자와 연결된 MenteeProfileEntity 찾기
+                Optional<MenteeProfileEntity> menteeProfileOptional =
+                        menteeProfileRepository.findByUserUserId(userId);
+                if (menteeProfileOptional.isPresent()) {
+                    // 필요한 필드 업데이트
+                    MenteeProfileEntity existingProfile = menteeProfileOptional.get();
+                    existingProfile.setRate(updatedProfileData.getRate());
+                    // 업데이트된 엔티티 저장
+                    MenteeProfileEntity savedProfile =
+                            menteeProfileRepository.save(existingProfile);
+                    return new ResponseEntity<>(savedProfile, HttpStatus.OK);
+                } else {
+                    return ResponseEntity.status(404).body("Mentee profile not found");
+                }
+            } else {
+                return ResponseEntity.status(401).body("Invalid token");
+            }
+        } else {
+            return ResponseEntity.status(400).body("Authorization header missing or invalid");
         }
     }
 }
