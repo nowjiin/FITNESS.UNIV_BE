@@ -34,4 +34,5 @@ public class PaymentApproval {
     private String userId;
     private String mentorUserName;
     private String mentorId;
+    private String menteeUserName;
 }

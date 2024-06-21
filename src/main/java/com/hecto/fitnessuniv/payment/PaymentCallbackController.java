@@ -104,6 +104,7 @@ public class PaymentCallbackController {
         String userId = params.get("userId");
         String mentorUserName = params.get("mentorUserName");
         String mentorId = params.get("mentorId");
+        String menteeUserName = params.get("menteeUserName");
 
         // PaymentApproval 객체를 생성하고 승인 파라미터 값을 설정
         PaymentApproval paymentApproval = new PaymentApproval();
@@ -124,6 +125,7 @@ public class PaymentCallbackController {
         paymentApproval.setUserId(userId); // userId 값을 설정
         paymentApproval.setMentorUserName(mentorUserName);
         paymentApproval.setMentorId(mentorId);
+        paymentApproval.setMenteeUserName(menteeUserName);
 
         // PaymentApproval 객체를 새로운 데이터베이스에 저장
         paymentApprovalRepository.save(paymentApproval);
