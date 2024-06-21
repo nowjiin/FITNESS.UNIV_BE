@@ -5,6 +5,8 @@ import java.util.Optional;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -124,6 +126,37 @@ public class MentorProfileController {
             }
         } else {
             return ResponseEntity.status(400).body("Authorization header missing or invalid");
+        }
+    }
+
+    @GetMapping("/mentor-profile/id")
+    public ResponseEntity<Long> getMentorProfileId(HttpServletRequest request) {
+        Logger logger = LoggerFactory.getLogger(MentorProfileController.class);
+
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            String token = bearerToken.substring(7);
+            logger.debug("Bearer token: {}", token);
+            if (jwtProvider.validate(token)) {
+                String userId = jwtProvider.getUserIdFromToken(token);
+                logger.debug("Extracted userId from token: {}", userId);
+                Optional<MentorProfileEntity> mentorProfileOptional =
+                        mentorProfileRepository.findByUserUserId(userId);
+                if (mentorProfileOptional.isPresent()) {
+                    Long mentorId = mentorProfileOptional.get().getId();
+                    logger.debug("Mentor ID: {}", mentorId);
+                    return ResponseEntity.ok(mentorId);
+                } else {
+                    logger.debug("Mentor profile not found for userId: {}", userId);
+                    return ResponseEntity.status(404).body(null);
+                }
+            } else {
+                logger.debug("Invalid token");
+                return ResponseEntity.status(401).body(null);
+            }
+        } else {
+            logger.debug("Authorization header missing or invalid");
+            return ResponseEntity.status(400).body(null);
         }
     }
 }

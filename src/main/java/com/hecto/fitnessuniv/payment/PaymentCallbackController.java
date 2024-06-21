@@ -155,9 +155,9 @@ public class PaymentCallbackController {
         return ResponseEntity.ok(paymentApprovals);
     }
 
-    @GetMapping("/payment/approval/mentor")
+    @GetMapping("/payment/approval/mentor/{mentorId}")
     public ResponseEntity<List<PaymentApproval>> getPaymentApprovalsByMentorId(
-            @RequestParam String mentorId) {
+            @PathVariable String mentorId) {
         logger.info("Fetching payment approvals for mentorId: {}", mentorId);
         List<PaymentApproval> paymentApprovals = paymentApprovalRepository.findByMentorId(mentorId);
         return ResponseEntity.ok(paymentApprovals);
