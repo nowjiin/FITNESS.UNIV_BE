@@ -59,7 +59,7 @@ public class SecurityConfig {
                                                 "/api/mentor",
                                                 "/api/mentor/**",
                                                 "/api/mentee",
-                                                "/api/mentor-profile",
+                                                "/api/mentor-profile/**",
                                                 "/api/mentee-profile",
                                                 "/api/refresh-token",
                                                 "/api/get-user-id",
